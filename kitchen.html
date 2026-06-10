@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>Kitchen Manager</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f0f4f0; min-height: 100vh; }
+  .header { background: #2d5a2d; color: white; padding: 16px 20px; text-align: center; }
+  .header h1 { font-size: 1.4rem; }
+  .header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .login-wrap { max-width: 360px; margin: 60px auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  .login-wrap h2 { color: #2d5a2d; margin-bottom: 20px; text-align: center; }
+  input { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; margin-bottom: 12px; }
+  .btn { width: 100%; padding: 12px; background: #2d5a2d; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+  .btn:hover { background: #1e3d1e; }
+  .btn-blue { background: #1a5276; } .btn-blue:hover { background: #154360; }
+  .btn-red { background: #c0392b; } .btn-red:hover { background: #922b21; }
+  .btn-sm { width: auto; padding: 7px 16px; font-size: 0.9rem; border-radius: 6px; margin: 3px; }
+  .main { max-width: 700px; margin: 20px auto; padding: 0 12px 40px; }
+  .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+  .card h2 { color: #2d5a2d; font-size: 1.1rem; margin-bottom: 14px; }
+  .status { text-align: center; padding: 10px; color: #2d5a2d; font-weight: 600; min-height: 30px; }
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab { flex: 1; min-width: 80px; padding: 10px 6px; text-align: center; border-radius: 8px; border: 2px solid #2d5a2d; background: white; color: #2d5a2d; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+  .tab.active { background: #2d5a2d; color: white; }
+  .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 16px; }
+  .day-btn { padding: 10px 4px; text-align: center; border-radius: 8px; border: 2px solid #2d5a2d; background: white; color: #2d5a2d; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
+  .day-btn.active { background: #2d5a2d; color: white; }
+  .day-btn.has-menu { border-color: #27ae60; color: #27ae60; }
+  .day-btn.has-menu.active { background: #27ae60; color: white; border-color: #27ae60; }
+  .day-btn.today { border-width: 3px; }
+  .meal-block { border: 2px solid #eee; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .option-label { font-weight: 700; font-size: 0.9rem; color: #555; margin-bottom: 6px; }
+  .mic-btn { width: 100%; padding: 11px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-bottom: 6px; background: #e67e22; color: white; }
+  .mic-btn.recording { background: #c0392b; }
+  .live-box { min-height: 36px; background: #f9f9f9; border-radius: 6px; padding: 8px; margin-bottom: 8px; font-size: 0.88rem; color: #555; }
+  .item-tag { display: inline-block; background: #eaf4ea; border: 1px solid #2d5a2d; border-radius: 20px; padding: 3px 10px; margin: 2px; font-size: 0.88rem; color: #2d5a2d; }
+  .item-tag .x { cursor: pointer; margin-left: 5px; color: #c0392b; font-weight: 700; }
+  .publish-box { background: #eaf4ea; border-radius: 10px; padding: 16px; text-align: center; }
+  .publish-status { font-size: 1rem; color: #2d5a2d; font-weight: 600; margin-bottom: 10px; }
+  .total-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #eee; font-size: 1rem; }
+  .total-row:last-child { border-bottom: none; }
+  .total-count { font-weight: 700; color: #1a5276; font-size: 1.1rem; min-width: 32px; text-align: right; }
+  .res-order { background: #f9f9f9; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+  .res-order-name { font-weight: 700; font-size: 1rem; color: #1a5276; }
+  .res-order-room { font-size: 0.85rem; color: #888; }
+  .res-order-diet { font-size: 0.85rem; color: #c0392b; }
+  .res-order-items { margin-top: 6px; font-size: 0.95rem; }
+  .nav-links { text-align: center; margin-top: 16px; }
+  .nav-links a { color: #2d5a2d; text-decoration: none; font-weight: 600; margin: 0 10px; }
+  @media print { .no-print { display: none !important; } .card { box-shadow: none; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🍳 Kitchen Manager</h1>
+  <p>Build weekly menu · Publish daily · View orders</p>
+</div>
+
+<div id="loginSection" class="login-wrap">
+  <h2>🔒 Kitchen Login</h2>
+  <input type="password" id="pwInput" placeholder="Enter password" />
+  <button class="btn" onclick="doLogin()">Login</button>
+  <div class="status" id="loginStatus"></div>
+</div>
+
+<div id="mainSection" style="display:none">
+  <div class="main">
+    <div class="tab-row no-print">
+      <div class="tab active" id="tab-week" onclick="showTab('week')">📅 Weekly Menu</div>
+      <div class="tab" id="tab-publish" onclick="showTab('publish')">📤 Publish Today</div>
+      <div class="tab" id="tab-orders" onclick="showTab('orders')">📊 Orders</div>
+    </div>
+
+    <!-- WEEKLY MENU TAB -->
+    <div id="pane-week">
+      <div class="card">
+        <h2>📅 Select Day to Build</h2>
+        <div class="day-grid" id="dayGrid"></div>
+        <div id="selectedDayLabel" style="text-align:center;font-weight:700;color:#2d5a2d;margin-bottom:4px;font-size:1.1rem"></div>
+      </div>
+
+      <!-- BREAKFAST: Option A only -->
+      <div class="card">
+        <h2>🌅 Breakfast <span style="font-size:0.8rem;color:#888;font-weight:400">(one set menu — no alternate)</span></h2>
+        <div class="meal-block">
+          <div class="option-label">🅐 Breakfast Menu</div>
+          <button class="mic-btn" id="mbtn-b-a" onclick="toggleMic('b','a')">🎤 Speak Breakfast Items — tap again to stop</button>
+          <div class="live-box" id="live-b-a">Speak items separated by commas...</div>
+          <div id="tags-b-a"></div>
+        </div>
+      </div>
+
+      <!-- LUNCH: Option A + B -->
+      <div class="card">
+        <h2>☀️ Lunch</h2>
+        <div class="meal-block">
+          <div class="option-label">🅐 Option A — Main Choice (bold)</div>
+          <button class="mic-btn" id="mbtn-l-a" onclick="toggleMic('l','a')">🎤 Speak Option A — tap again to stop</button>
+          <div class="live-box" id="live-l-a">Speak items separated by commas...</div>
+          <div id="tags-l-a"></div>
+        </div>
+        <div class="meal-block">
+          <div class="option-label">🅑 Option B — Alternate Choice (italic)</div>
+          <button class="mic-btn" id="mbtn-l-b" onclick="toggleMic('l','b')">🎤 Speak Option B — tap again to stop</button>
+          <div class="live-box" id="live-l-b">Speak items separated by commas...</div>
+          <div id="tags-l-b"></div>
+        </div>
+      </div>
+
+      <!-- DINNER: Option A + B -->
+      <div class="card">
+        <h2>🌙 Dinner</h2>
+        <div class="meal-block">
+          <div class="option-label">🅐 Option A — Main Choice (bold)</div>
+          <button class="mic-btn" id="mbtn-d-a" onclick="toggleMic('d','a')">🎤 Speak Option A — tap again to stop</button>
+          <div class="live-box" id="live-d-a">Speak items separated by commas...</div>
+          <div id="tags-d-a"></div>
+        </div>
+        <div class="meal-block">
+          <div class="option-label">🅑 Option B — Alternate Choice (italic)</div>
+          <button class="mic-btn" id="mbtn-d-b" onclick="toggleMic('d','b')">🎤 Speak Option B — tap again to stop</button>
+          <div class="live-box" id="live-d-b">Speak items separated by commas...</div>
+          <div id="tags-d-b"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <button class="btn" onclick="saveDayMenu()">💾 Save This Day's Menu</button>
+        <div class="status" id="saveStatus"></div>
+      </div>
+    </div>
+
+    <!-- PUBLISH TAB -->
+    <div id="pane-publish" style="display:none">
+      <div class="card">
+        <h2>📤 Publish Today's Menu</h2>
+        <p style="color:#888;margin-bottom:14px;font-size:0.95rem">Pick the day and send to order takers.</p>
+        <div class="day-grid" id="publishDayGrid"></div>
+        <div class="publish-box" style="margin-top:14px">
+          <div class="publish-status" id="publishStatus">No menu published yet today.</div>
+          <div id="publishPreview" style="margin-bottom:12px;text-align:left;font-size:0.92rem"></div>
+          <button class="btn btn-blue" onclick="publishMenu()">📤 Publish to Order Takers</button>
+          <button class="btn btn-red" onclick="clearOrders()" style="margin-top:6px">🗑️ Clear Today's Orders</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div id="pane-orders" style="display:none">
+      <div class="card">
+        <h2>📊 Item Totals</h2>
+        <button class="btn no-print" onclick="loadOrders()" style="margin-bottom:12px">🔄 Refresh</button>
+        <div id="totalsOut"></div>
+      </div>
+      <div class="card">
+        <h2>📄 Individual Orders <button class="btn btn-sm no-print" onclick="window.print()" style="float:right">🖨️ Print</button></h2>
+        <div id="ordersOut"></div>
+      </div>
+    </div>
+
+    <div class="nav-links no-print">
+      <a href="nurse.html">🏥 Nurse</a>
+      <a href="order.html">📋 Order Taker</a>
+      <a href="substitutes.html">🍽️ Substitutes</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB = 'https://john-the-builder-default-rtdb.firebaseio.com';
+const PASS = 'manager2024';
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var items = { b:{a:[]}, l:{a:[],b:[]}, d:{a:[],b:[]} };
+var activeMeal=null, activeOpt=null, stopping=false, recog=null;
+var selectedDay = new Date().getDay();
+var publishDay = new Date().getDay();
+var weekMenus = {};
+
+function doLogin() {
+  if (document.getElementById('pwInput').value.trim()===PASS) {
+    document.getElementById('loginSection').style.display='none';
+    document.getElementById('mainSection').style.display='block';
+    loadWeekMenus(); checkPublishStatus();
+  } else { document.getElementById('loginStatus').textContent='❌ Incorrect password'; }
+}
+document.getElementById('pwInput').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+
+function showTab(tab) {
+  ['week','publish','orders'].forEach(function(t){
+    document.getElementById('pane-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='orders') loadOrders();
+  if(tab==='publish') renderPublishGrid();
+}
+
+function loadWeekMenus() {
+  fetch(DB+'/weekmenu.json').then(function(r){return r.json();}).then(function(data){
+    weekMenus=data||{}; renderDayGrid(); selectDay(selectedDay);
+  });
+}
+
+function renderDayGrid() {
+  var today=new Date().getDay(), html='';
+  for(var i=0;i<7;i++){
+    var cls='day-btn';
+    if(i===today) cls+=' today';
+    if(weekMenus[i]) cls+=' has-menu';
+    if(i===selectedDay) cls+=' active';
+    html+='<div class="'+cls+'" onclick="selectDay('+i+')">'+SHORT[i]+'</div>';
+  }
+  document.getElementById('dayGrid').innerHTML=html;
+}
+
+function selectDay(day) {
+  selectedDay=day; renderDayGrid();
+  document.getElementById('selectedDayLabel').textContent='✏️ Editing: '+DAYS[day];
+  var m=weekMenus[day]||{};
+  items.b.a=(m.b&&m.b.a)||[];
+  items.l.a=(m.l&&m.l.a)||[]; items.l.b=(m.l&&m.l.b)||[];
+  items.d.a=(m.d&&m.d.a)||[]; items.d.b=(m.d&&m.d.b)||[];
+  ['b-a','l-a','l-b','d-a','d-b'].forEach(function(k){
+    var p=k.split('-'); renderTags(p[0],p[1]);
+    document.getElementById('live-'+k).textContent='Speak items separated by commas...';
+  });
+}
+
+function saveDayMenu() {
+  var menu={b:{a:items.b.a}, l:{a:items.l.a,b:items.l.b}, d:{a:items.d.a,b:items.d.b}};
+  fetch(DB+'/weekmenu/'+selectedDay+'.json',{method:'PUT',body:JSON.stringify(menu)})
+    .then(function(){
+      weekMenus[selectedDay]=menu; renderDayGrid();
+      document.getElementById('saveStatus').textContent='✅ '+DAYS[selectedDay]+'\'s menu saved!';
+      setTimeout(function(){document.getElementById('saveStatus').textContent='';},2500);
+    });
+}
+
+function renderPublishGrid() {
+  var today=new Date().getDay(), html='';
+  for(var i=0;i<7;i++){
+    var cls='day-btn';
+    if(i===today) cls+=' today';
+    if(weekMenus[i]) cls+=' has-menu';
+    if(i===publishDay) cls+=' active';
+    html+='<div class="'+cls+'" onclick="selectPublishDay('+i+')">'+SHORT[i]+(weekMenus[i]?' ✓':'')+'</div>';
+  }
+  document.getElementById('publishDayGrid').innerHTML=html;
+  showPublishPreview();
+}
+
+function selectPublishDay(day){publishDay=day;renderPublishGrid();}
+
+function showPublishPreview() {
+  var m=weekMenus[publishDay];
+  if(!m){document.getElementById('publishPreview').innerHTML='<p style="color:#c0392b">⚠️ No menu saved for '+DAYS[publishDay]+' yet.</p>';return;}
+  var html='<strong>'+DAYS[publishDay]+'\'s Menu Preview:</strong><br><br>';
+  if(m.b&&m.b.a&&m.b.a.length) html+='<strong>🌅 Breakfast:</strong> '+m.b.a.join(', ')+'<br><br>';
+  if(m.l){
+    html+='<strong>☀️ Lunch:</strong><br>';
+    if(m.l.a&&m.l.a.length) html+='&nbsp;&nbsp;🅐 '+m.l.a.join(', ')+'<br>';
+    if(m.l.b&&m.l.b.length) html+='&nbsp;&nbsp;🅑 '+m.l.b.join(', ')+'<br>';
+    html+='<br>';
+  }
+  if(m.d){
+    html+='<strong>🌙 Dinner:</strong><br>';
+    if(m.d.a&&m.d.a.length) html+='&nbsp;&nbsp;🅐 '+m.d.a.join(', ')+'<br>';
+    if(m.d.b&&m.d.b.length) html+='&nbsp;&nbsp;🅑 '+m.d.b.join(', ')+'<br>';
+  }
+  document.getElementById('publishPreview').innerHTML=html;
+}
+
+function publishMenu() {
+  var m=weekMenus[publishDay];
+  if(!m){alert('No menu saved for '+DAYS[publishDay]+'.');return;}
+  var toPublish={b:m.b,l:m.l,d:m.d,publishedAt:Date.now(),day:DAYS[publishDay]};
+  fetch(DB+'/menu/today.json',{method:'PUT',body:JSON.stringify(toPublish)})
+    .then(function(){
+      document.getElementById('publishStatus').textContent='✅ '+DAYS[publishDay]+'\'s menu published at '+new Date().toLocaleTimeString()+'!';
+    });
+}
+
+function checkPublishStatus() {
+  fetch(DB+'/menu/today.json').then(function(r){return r.json();}).then(function(menu){
+    if(menu&&menu.publishedAt)
+      document.getElementById('publishStatus').textContent='✅ '+(menu.day||'')+' published at '+new Date(menu.publishedAt).toLocaleTimeString();
+  });
+}
+
+function clearOrders() {
+  if(!confirm('Clear ALL orders for today?')) return;
+  fetch(DB+'/orders.json',{method:'DELETE'}).then(function(){alert('Orders cleared.');});
+}
+
+// ---- MIC ----
+function toggleMic(meal,opt) {
+  if(activeMeal===meal&&activeOpt===opt){
+    stopping=true; activeMeal=null; activeOpt=null;
+    if(recog){try{recog.stop();}catch(e){} recog=null;}
+    setBtn(meal,opt,false);
+  } else {
+    if(activeMeal){stopping=true;var pm=activeMeal,po=activeOpt;activeMeal=null;activeOpt=null;if(recog){try{recog.stop();}catch(e){} recog=null;}setBtn(pm,po,false);}
+    setTimeout(function(){stopping=false;activeMeal=meal;activeOpt=opt;startListening(meal,opt);setBtn(meal,opt,true);},150);
+  }
+}
+
+function setBtn(meal,opt,active){
+  var btn=document.getElementById('mbtn-'+meal+'-'+opt);
+  var lbl=opt==='a'?'Option A':'Option B';
+  if(meal==='b') lbl='Breakfast Items';
+  btn.textContent=active?'🔴 Recording '+lbl+'... tap to stop':'🎤 Speak '+lbl+' — tap again to stop';
+  btn.classList.toggle('recording',active);
+}
+
+function startListening(meal,opt){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('Please use Chrome.');return;}
+  var allFinal=''; stopping=false;
+  function doStart(){
+    var r=new SR(); r.lang='en-US'; r.continuous=true; r.interimResults=true;
+    r.onresult=function(e){
+      var interim='';
+      for(var i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) allFinal+=e.results[i][0].transcript+', ';
+        else interim+=e.results[i][0].transcript;
+      }
+      document.getElementById('live-'+meal+'-'+opt).textContent=allFinal+interim;
+    };
+    r.onend=function(){
+      if(!stopping&&activeMeal===meal&&activeOpt===opt){setTimeout(function(){if(!stopping&&activeMeal===meal&&activeOpt===opt)doStart();},100);}
+      else{
+        var parsed=parseItems(allFinal);
+        items[meal][opt]=parsed; renderTags(meal,opt);
+        document.getElementById('live-'+meal+'-'+opt).textContent=parsed.length+' item(s) recorded.';
+      }
+    };
+    r.onerror=function(err){if(err.error!=='no-speech'&&err.error!=='aborted')console.log(err.error);};
+    recog=r; try{recog.start();}catch(ex){}
+  }
+  doStart();
+}
+
+function parseItems(text){
+  return text.split(/[,،.]+/).map(function(s){return s.trim();}).filter(function(s){return s.length>1;});
+}
+
+function renderTags(meal,opt){
+  var html=items[meal][opt].map(function(item,i){
+    return '<span class="item-tag">'+item+'<span class="x" onclick="removeItem(\''+meal+'\',\''+opt+'\','+i+')">✕</span></span>';
+  }).join('');
+  document.getElementById('tags-'+meal+'-'+opt).innerHTML=html;
+}
+
+function removeItem(meal,opt,idx){items[meal][opt].splice(idx,1);renderTags(meal,opt);}
+
+// ---- ORDERS ----
+function loadOrders(){
+  fetch(DB+'/orders.json').then(function(r){return r.json();}).then(function(data){
+    if(!data){document.getElementById('totalsOut').innerHTML='<p style="color:#888;text-align:center;padding:20px">No orders yet.</p>';document.getElementById('ordersOut').innerHTML='';return;}
+    var orders=Object.values(data);
+    orders.sort(function(a,b){return a.room.localeCompare(b.room);});
+    buildTotals(orders); buildIndividualOrders(orders);
+  });
+}
+
+function buildTotals(orders){
+  var counts={b:{},l:{},d:{}};
+  var mealLabels={b:'🌅 Breakfast',l:'☀️ Lunch',d:'🌙 Dinner'};
+  orders.forEach(function(order){
+    if(!order.meals) return;
+    ['b','l','d'].forEach(function(key){
+      var c=order.meals[key]; if(!c) return;
+      var label=c.type==='custom'?'🎤 Custom: '+c.text:(c.type==='a'?'🅐 ':'🅑 ')+(c.items||[]).join(', ');
+      counts[key][label]=(counts[key][label]||0)+1;
+    });
+  });
+  var html='';
+  ['b','l','d'].forEach(function(key){
+    var entries=Object.entries(counts[key]);
+    if(!entries.length) return;
+    html+='<div style="margin-bottom:14px"><div style="font-weight:700;color:#2d5a2d;margin-bottom:8px">'+mealLabels[key]+'</div>';
+    entries.sort(function(a,b){return b[1]-a[1];}).forEach(function(e){
+      html+='<div class="total-row"><span>'+e[0]+'</span><span class="total-count">'+e[1]+'</span></div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('totalsOut').innerHTML=html||'<p style="color:#888">No orders yet.</p>';
+}
+
+function buildIndividualOrders(orders){
+  var mealLabels={b:'🌅 Breakfast',l:'☀️ Lunch',d:'🌙 Dinner'};
+  var html='<p style="font-size:0.85rem;color:#888;margin-bottom:10px">'+orders.length+' order(s)</p>';
+  orders.forEach(function(order){
+    html+='<div class="res-order"><div class="res-order-name">'+order.name+'</div><div class="res-order-room">Room '+order.room+'</div><div class="res-order-diet">⚠️ '+order.diet+'</div><div class="res-order-items">';
+    if(order.meals){
+      ['b','l','d'].forEach(function(key){
+        var c=order.meals[key]; if(!c) return;
+        var desc=c.type==='custom'?'🎤 Custom: '+c.text:(c.type==='a'?'🅐 ':'🅑 ')+(c.items||[]).join(', ');
+        html+='<strong>'+mealLabels[key]+':</strong> '+desc+'<br>';
+      });
+    }
+    html+='</div></div>';
+  });
+  document.getElementById('ordersOut').innerHTML=html;
+}
+</script>
+</body>
+</html>
