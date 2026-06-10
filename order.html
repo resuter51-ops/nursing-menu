@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>Order Taker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f0f4f0; min-height: 100vh; }
+  .header { background: #1a5276; color: white; padding: 16px 20px; text-align: center; }
+  .header h1 { font-size: 1.4rem; }
+  .header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .main { max-width: 500px; margin: 20px auto; padding: 0 12px 40px; }
+  .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+  .card h2 { color: #1a5276; font-size: 1.1rem; margin-bottom: 14px; }
+  input { width: 100%; padding: 12px; border: 2px solid #ccc; border-radius: 8px; font-size: 1.2rem; margin-bottom: 10px; text-align: center; letter-spacing: 2px; }
+  input:focus { border-color: #1a5276; outline: none; }
+  .btn { width: 100%; padding: 13px; background: #1a5276; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+  .btn:hover { background: #154360; }
+  .btn-green { background: #2d5a2d; } .btn-green:hover { background: #1e3d1e; }
+  .btn-gray { background: #888; } .btn-gray:hover { background: #666; }
+  .btn-orange { background: #e67e22; } .btn-orange:hover { background: #ca6f1e; }
+  .resident-box { background: #eaf4ea; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+  .res-room { font-size: 1rem; font-weight: 700; color: #1a5276; }
+  .res-name { font-size: 1.3rem; font-weight: 900; color: #111; margin: 4px 0; }
+  .res-diet { font-size: 0.95rem; color: #c0392b; font-weight: 600; }
+  .meal-section { margin-bottom: 18px; border: 2px solid #eee; border-radius: 10px; padding: 14px; }
+  .meal-title { font-weight: 700; font-size: 1rem; color: #1a5276; margin-bottom: 10px; }
+  .choice-btn { display: block; width: 100%; text-align: left; padding: 12px 14px; margin-bottom: 8px; border: 2px solid #ddd; border-radius: 8px; background: white; font-size: 0.95rem; cursor: pointer; line-height: 1.4; }
+  .choice-btn.selected { background: #1a5276; color: white; border-color: #1a5276; font-weight: 700; }
+  .choice-btn.selected-b { background: #2d5a2d; color: white; border-color: #2d5a2d; font-weight: 700; }
+  .choice-btn.selected-custom { background: #e67e22; color: white; border-color: #e67e22; font-weight: 700; }
+  .mic-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .mic-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e67e22; color: white; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
+  .mic-btn.recording { background: #c0392b; }
+  .custom-text { flex: 2; padding: 10px; border: 2px solid #e67e22; border-radius: 8px; font-size: 0.95rem; color: #333; background: #fff8f3; min-height: 40px; display: flex; align-items: center; }
+  .status { text-align: center; padding: 10px; color: #2d5a2d; font-weight: 600; min-height: 30px; }
+  .subs-link { text-align: center; margin-bottom: 14px; }
+  .subs-link a { color: #1a5276; font-weight: 700; text-decoration: none; font-size: 0.95rem; background: #e8f0fe; padding: 8px 16px; border-radius: 8px; display: inline-block; }
+  .nav-links { text-align: center; margin-top: 16px; }
+  .nav-links a { color: #1a5276; text-decoration: none; font-weight: 600; margin: 0 10px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📋 Order Taker</h1>
+  <p>Enter room number to start an order</p>
+</div>
+
+<div class="main">
+  <div class="subs-link">
+    <a href="substitutes.html" target="_blank">🍽️ View All Substitute Choices</a>
+  </div>
+
+  <div class="card" id="roomCard">
+    <h2>🔢 Enter Room Number</h2>
+    <input type="text" id="roomIn" placeholder="e.g. 101" autocomplete="off" />
+    <button class="btn" onclick="lookupRoom()">Find Resident</button>
+    <div class="status" id="lookupStatus"></div>
+  </div>
+
+  <div id="orderSection" style="display:none">
+    <div class="card">
+      <div class="resident-box" id="resBox"></div>
+
+      <!-- BREAKFAST -->
+      <div class="meal-section" id="sec-b">
+        <div class="meal-title">🌅 Breakfast</div>
+        <div id="bfast-options"></div>
+        <div class="mic-row">
+          <button class="mic-btn" id="mic-b" onclick="toggleCustomMic('b')">🎤 Custom Choice</button>
+          <div class="custom-text" id="custom-display-b">Tap mic to speak a custom choice...</div>
+        </div>
+      </div>
+
+      <!-- LUNCH -->
+      <div class="meal-section" id="sec-l">
+        <div class="meal-title">☀️ Lunch</div>
+        <div id="lunch-options"></div>
+        <div class="mic-row">
+          <button class="mic-btn" id="mic-l" onclick="toggleCustomMic('l')">🎤 Custom Choice</button>
+          <div class="custom-text" id="custom-display-l">Tap mic to speak a custom choice...</div>
+        </div>
+      </div>
+
+      <!-- DINNER -->
+      <div class="meal-section" id="sec-d">
+        <div class="meal-title">🌙 Dinner</div>
+        <div id="dinner-options"></div>
+        <div class="mic-row">
+          <button class="mic-btn" id="mic-d" onclick="toggleCustomMic('d')">🎤 Custom Choice</button>
+          <div class="custom-text" id="custom-display-d">Tap mic to speak a custom choice...</div>
+        </div>
+      </div>
+
+      <button class="btn btn-green" onclick="submitOrder()">✅ Submit Order</button>
+      <button class="btn btn-gray" onclick="resetForm()">🔄 New Room</button>
+      <div class="status" id="orderStatus"></div>
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="nurse.html">🏥 Nurse</a>
+    <a href="kitchen.html">🍳 Kitchen</a>
+    <a href="substitutes.html">🍽️ Substitutes</a>
+  </div>
+</div>
+
+<script>
+const DB = 'https://john-the-builder-default-rtdb.firebaseio.com';
+var currentResident = null;
+var currentMenu = null;
+var mealChoices = { b: null, l: null, d: null }; // {type:'a'|'b'|'custom', items:[], text:''}
+var activeMic = null, micRecog = null, micStopping = false;
+
+document.getElementById('roomIn').addEventListener('keydown', function(e){ if(e.key==='Enter') lookupRoom(); });
+
+function lookupRoom() {
+  var room = document.getElementById('roomIn').value.trim().toUpperCase();
+  if (!room) return;
+  document.getElementById('lookupStatus').textContent = 'Looking up...';
+  Promise.all([
+    fetch(DB+'/residents/'+room+'.json').then(function(r){return r.json();}),
+    fetch(DB+'/menu/today.json').then(function(r){return r.json();})
+  ]).then(function(results) {
+    var resident = results[0], menu = results[1];
+    if (!resident) { document.getElementById('lookupStatus').textContent = '❌ Room '+room+' not found.'; return; }
+    if (!menu) { document.getElementById('lookupStatus').textContent = '⚠️ No menu published yet. Ask kitchen.'; return; }
+    currentResident = resident; currentMenu = menu;
+    mealChoices = { b:null, l:null, d:null };
+    document.getElementById('lookupStatus').textContent = '';
+    buildOrderForm();
+  });
+}
+
+function buildOrderForm() {
+  var r = currentResident;
+  document.getElementById('resBox').innerHTML =
+    '<div class="res-room">Room '+r.room+'</div>' +
+    '<div class="res-name">'+r.name+'</div>' +
+    '<div class="res-diet">⚠️ '+r.diet+'</div>';
+
+  buildMealOptions('b', currentMenu.b);
+  buildMealOptions('l', currentMenu.l);
+  buildMealOptions('d', currentMenu.d);
+
+  document.getElementById('roomCard').style.display = 'none';
+  document.getElementById('orderSection').style.display = 'block';
+}
+
+function buildMealOptions(meal, data) {
+  var containerId = meal==='b'?'bfast-options': meal==='l'?'lunch-options':'dinner-options';
+  if (!data) { document.getElementById(containerId).innerHTML = '<p style="color:#888;font-size:0.9rem">Not available today.</p>'; return; }
+  var html = '';
+  if (data.a && data.a.length) {
+    html += '<button class="choice-btn" id="opt-'+meal+'-a" onclick="selectOption(\''+meal+'\',\'a\')">🅐 '+data.a.join(' · ')+'</button>';
+  }
+  if (data.b && data.b.length) {
+    html += '<button class="choice-btn" id="opt-'+meal+'-b" onclick="selectOption(\''+meal+'\',\'b\')">🅑 '+data.b.join(' · ')+'</button>';
+  }
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function selectOption(meal, opt) {
+  // Clear custom mic if active for this meal
+  if (activeMic === meal) stopCustomMic(meal);
+  mealChoices[meal] = { type: opt, items: currentMenu[meal][opt] };
+  // Update button styles
+  ['a','b'].forEach(function(o) {
+    var btn = document.getElementById('opt-'+meal+'-'+o);
+    if (!btn) return;
+    btn.className = 'choice-btn' + (opt===o ? (o==='a'?' selected':' selected-b') : '');
+  });
+  document.getElementById('custom-display-'+meal).textContent = 'Tap mic to speak a custom choice...';
+  document.getElementById('mic-'+meal).textContent = '🎤 Custom Choice';
+  document.getElementById('mic-'+meal).classList.remove('recording');
+}
+
+// ---- CUSTOM MIC PER MEAL ----
+function toggleCustomMic(meal) {
+  if (activeMic === meal) {
+    stopCustomMic(meal);
+  } else {
+    if (activeMic) stopCustomMic(activeMic);
+    setTimeout(function(){ startCustomMic(meal); }, 150);
+  }
+}
+
+function startCustomMic(meal) {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Please use Chrome.'); return; }
+  micStopping = false; activeMic = meal;
+  document.getElementById('mic-'+meal).textContent = '🔴 Recording... tap to stop';
+  document.getElementById('mic-'+meal).classList.add('recording');
+  document.getElementById('custom-display-'+meal).textContent = 'Listening...';
+
+  var r = new SR(); r.lang='en-US'; r.continuous=false; r.interimResults=true;
+  var finalText = '';
+  r.onresult = function(e) {
+    var interim='';
+    for(var i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) finalText += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('custom-display-'+meal).textContent = finalText || interim;
+  };
+  r.onend = function() {
+    if (finalText.trim()) {
+      mealChoices[meal] = { type:'custom', text: finalText.trim() };
+      document.getElementById('custom-display-'+meal).textContent = '✅ ' + finalText.trim();
+      // Deselect A/B buttons
+      ['a','b'].forEach(function(o){
+        var btn=document.getElementById('opt-'+meal+'-'+o);
+        if(btn) btn.className='choice-btn';
+      });
+    }
+    document.getElementById('mic-'+meal).textContent = '🎤 Custom Choice';
+    document.getElementById('mic-'+meal).classList.remove('recording');
+    activeMic = null; micRecog = null;
+  };
+  r.onerror = function(err){ if(err.error!=='no-speech') console.log(err.error); };
+  micRecog = r;
+  try { micRecog.start(); } catch(ex){}
+}
+
+function stopCustomMic(meal) {
+  micStopping = true;
+  if (micRecog){ try{micRecog.stop();}catch(e){} micRecog=null; }
+  document.getElementById('mic-'+meal).textContent = '🎤 Custom Choice';
+  document.getElementById('mic-'+meal).classList.remove('recording');
+  activeMic = null;
+}
+
+// ---- SUBMIT ----
+function submitOrder() {
+  var hasAny = mealChoices.b || mealChoices.l || mealChoices.d;
+  if (!hasAny) { document.getElementById('orderStatus').textContent = '⚠️ Please select at least one meal.'; return; }
+  var order = {
+    room: currentResident.room,
+    name: currentResident.name,
+    diet: currentResident.diet,
+    timestamp: Date.now(),
+    meals: {}
+  };
+  if (mealChoices.b) order.meals.b = mealChoices.b;
+  if (mealChoices.l) order.meals.l = mealChoices.l;
+  if (mealChoices.d) order.meals.d = mealChoices.d;
+
+  fetch(DB+'/orders/'+currentResident.room+'.json', {method:'PUT', body:JSON.stringify(order)})
+    .then(function(){
+      document.getElementById('orderStatus').textContent = '✅ Order submitted for '+currentResident.name+'!';
+      setTimeout(function(){ resetForm(); }, 2000);
+    });
+}
+
+function resetForm() {
+  currentResident=null; mealChoices={b:null,l:null,d:null};
+  document.getElementById('roomIn').value='';
+  document.getElementById('lookupStatus').textContent='';
+  document.getElementById('orderStatus').textContent='';
+  document.getElementById('orderSection').style.display='none';
+  document.getElementById('roomCard').style.display='block';
+  document.getElementById('roomIn').focus();
+}
+</script>
+</body>
+</html>
