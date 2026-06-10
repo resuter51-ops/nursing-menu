@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NursingMenu Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#1a3a1a;min-height:100vh;color:white;}
+.header{background:rgba(0,0,0,0.5);padding:16px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.15);}
+.header h1{font-size:1.5rem;font-weight:900;}
+.header p{color:rgba(255,255,255,0.6);font-size:0.8rem;margin-top:2px;}
+.nav{display:flex;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.1);}
+.nav-btn{flex:1;padding:12px 4px;border:none;background:transparent;color:rgba(255,255,255,0.6);font-size:0.75rem;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;}
+.nav-btn.active{color:#f39c12;border-bottom:3px solid #f39c12;}
+.page{display:none;padding:16px;max-width:640px;margin:0 auto;}
+.page.active{display:block;}
+
+/* CARDS */
+.card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:16px;margin-bottom:14px;}
+.card-title{color:#f39c12;font-weight:900;font-size:1rem;margin-bottom:12px;}
+
+/* BUTTONS */
+.btn-green{width:100%;padding:14px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;border:none;border-radius:12px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:8px;}
+.btn-orange{width:100%;padding:14px;background:linear-gradient(135deg,#f39c12,#e67e22);color:white;border:none;border-radius:12px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:8px;}
+.btn-orange.on{background:linear-gradient(135deg,#e74c3c,#c0392b);animation:pulse 1s infinite;}
+.btn-red{width:100%;padding:12px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;border-radius:12px;font-size:0.9rem;font-weight:700;cursor:pointer;margin-bottom:8px;}
+.btn-gray{width:100%;padding:11px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:12px;font-size:0.88rem;cursor:pointer;margin-bottom:8px;}
+.btn-small{padding:6px 14px;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;}
+.btn-add{background:#27ae60;color:white;}
+.btn-del{background:#e74c3c;color:white;}
+
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(231,76,60,0.7);}70%{box-shadow:0 0 0 10px rgba(231,76,60,0);}100%{box-shadow:0 0 0 0 rgba(231,76,60,0);}}
+
+/* INPUTS */
+input[type=text],input[type=number]{width:100%;padding:10px 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;color:white;font-size:0.92rem;outline:none;margin-bottom:8px;}
+input::placeholder{color:rgba(255,255,255,0.3);}
+.input-row{display:flex;gap:8px;margin-bottom:8px;}
+.input-row input{margin-bottom:0;}
+
+/* ITEMS LIST */
+.item-list{margin-top:8px;}
+.item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.06);border-radius:10px;margin-bottom:6px;}
+.item-row .iname{font-size:0.9rem;}
+.item-row .ies{font-size:0.8rem;color:rgba(255,255,255,0.5);font-style:italic;}
+
+/* LIVE BOX */
+.live-box{background:rgba(0,0,0,0.35);border-radius:10px;padding:10px;min-height:60px;border:1px solid rgba(255,255,255,0.15);margin-bottom:8px;}
+.live-item{padding:3px 0;font-size:0.88rem;border-bottom:1px dotted rgba(255,255,255,0.1);}
+.live-item:last-child{border:none;}
+.live-interim{color:rgba(255,255,0,0.7);font-size:0.82rem;font-style:italic;padding:3px 0;}
+.live-empty{color:rgba(255,255,255,0.25);font-style:italic;font-size:0.82rem;}
+.icount{color:#2ecc71;font-size:0.75rem;text-align:right;margin-bottom:6px;}
+
+/* STATUS */
+.status{text-align:center;color:#f39c12;font-weight:700;min-height:20px;margin:8px 0;font-size:0.9rem;}
+
+/* MENU PREVIEW (white) */
+.menu-preview{background:white;color:#111;border-radius:14px;padding:18px;margin-bottom:12px;}
+.mp-title{text-align:center;color:#2d5a2d;font-weight:900;font-size:1.2rem;margin-bottom:4px;}
+.mp-date{text-align:center;color:#666;font-size:0.85rem;margin-bottom:10px;}
+.mp-section{margin-bottom:12px;}
+.mp-section-title{color:#2d5a2d;font-weight:900;font-size:0.9rem;text-transform:uppercase;border-bottom:1px solid #ccc;padding-bottom:3px;margin-bottom:6px;}
+.mp-item{padding:4px 0;border-bottom:1px dotted #eee;}
+.mp-en{font-size:0.9rem;font-weight:600;color:#111;}
+.mp-es{font-size:0.82rem;color:#2d5a2d;font-style:italic;padding-left:8px;}
+
+/* ORDER TAKER */
+.room-input-big{font-size:2rem;text-align:center;padding:16px;border-radius:14px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);color:white;width:100%;outline:none;margin-bottom:10px;letter-spacing:4px;}
+.resident-card{background:rgba(255,255,100,0.1);border:1px solid rgba(255,255,100,0.3);border-radius:12px;padding:12px;margin-bottom:12px;}
+.resident-name{font-size:1.1rem;font-weight:900;color:#f39c12;}
+.resident-diet{font-size:0.82rem;color:rgba(255,255,255,0.7);margin-top:4px;}
+.menu-item-btn{width:100%;padding:12px 14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;font-size:0.9rem;text-align:left;cursor:pointer;margin-bottom:6px;}
+.menu-item-btn.selected{background:rgba(39,174,96,0.3);border-color:#27ae60;color:#2ecc71;}
+.menu-item-btn.staple{border-color:rgba(243,156,18,0.4);}
+.menu-item-btn.staple.selected{background:rgba(39,174,96,0.3);border-color:#27ae60;}
+
+/* KITCHEN */
+.order-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;}
+.order-room{color:#f39c12;font-weight:900;font-size:0.95rem;margin-bottom:4px;}
+.order-item{font-size:0.88rem;padding:2px 0;color:rgba(255,255,255,0.85);}
+
+/* PRINT */
+@media print{
+  body{background:white!important;color:#111;}
+  .header,.nav,.no-print{display:none!important;}
+  .page{display:block!important;padding:0;}
+  .menu-preview,.kitchen-print{display:block;}
+  *{color:#111!important;}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="font-size:1.6rem">🍽️</div>
+  <h1>NursingMenu Pro</h1>
+  <p>Sistema de Menú para Residencias · Nursing Home Menu System</p>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('manager')">👨‍🍳<br>Manager</button>
+  <button class="nav-btn" onclick="showPage('residents')">🏥<br>Residents</button>
+  <button class="nav-btn" onclick="showPage('order')">📋<br>Take Orders</button>
+  <button class="nav-btn" onclick="showPage('kitchen')">🖨️<br>Kitchen</button>
+</div>
+
+<!-- ===== MANAGER PAGE ===== -->
+<div class="page active" id="page-manager">
+  <!-- Staples -->
+  <div class="card">
+    <div class="card-title">⭐ Staple Items / Artículos Fijos</div>
+    <p style="color:rgba(255,255,255,0.55);font-size:0.78rem;margin-bottom:10px;">These appear on EVERY menu automatically · Estos aparecen en TODOS los menús</p>
+    <div class="input-row">
+      <input type="text" id="staple-en" placeholder="English name" />
+      <input type="text" id="staple-es" placeholder="Nombre en español" />
+      <button class="btn-small btn-add" onclick="addStaple()">+ Add</button>
+    </div>
+    <div class="item-list" id="staple-list"></div>
+  </div>
+
+  <!-- Daily Menu Builder -->
+  <div class="card">
+    <div class="card-title">📅 Today's Special Items / Especiales de Hoy</div>
+    <input type="text" id="menu-date" />
+
+    <div style="color:#f39c12;font-weight:700;font-size:0.88rem;margin-bottom:6px;">🌅 Breakfast / Desayuno</div>
+    <button class="btn-orange" id="mic-b" onclick="toggleMic('b')">🎤 Speak Breakfast Items</button>
+    <div class="live-box" id="live-b"><div class="live-empty">Items appear here as you speak...</div></div>
+    <div class="icount" id="count-b"></div>
+
+    <div style="color:#f39c12;font-weight:700;font-size:0.88rem;margin-bottom:6px;margin-top:8px;">☀️ Lunch / Almuerzo</div>
+    <button class="btn-orange" id="mic-l" onclick="toggleMic('l')">🎤 Speak Lunch Items</button>
+    <div class="live-box" id="live-l"><div class="live-empty">Items appear here as you speak...</div></div>
+    <div class="icount" id="count-l"></div>
+
+    <div style="color:#f39c12;font-weight:700;font-size:0.88rem;margin-bottom:6px;margin-top:8px;">🌙 Dinner / Cena</div>
+    <button class="btn-orange" id="mic-d" onclick="toggleMic('d')">🎤 Speak Dinner Items</button>
+    <div class="live-box" id="live-d"><div class="live-empty">Items appear here as you speak...</div></div>
+    <div class="icount" id="count-d"></div>
+  </div>
+
+  <button class="btn-green" onclick="buildAndPreview()">👁️ Preview Menu / Ver Menú</button>
+  <div class="status" id="mgr-status"></div>
+
+  <div id="menu-preview-box" style="display:none">
+    <div class="menu-preview" id="menu-preview-inner"></div>
+    <button class="btn-green" onclick="transmitMenu()">📡 Transmit to Order Takers / Transmitir</button>
+    <button class="btn-gray" onclick="window.print()">🖨️ Print Bulletin / Imprimir</button>
+    <button class="btn-gray" onclick="clearManager()">🗑️ Clear / Limpiar</button>
+  </div>
+</div>
+
+<!-- ===== RESIDENTS PAGE ===== -->
+<div class="page" id="page-residents">
+  <div class="card">
+    <div class="card-title">🏥 Resident List / Lista de Residentes</div>
+    <p style="color:rgba(255,255,255,0.5);font-size:0.78rem;margin-bottom:10px;">Enter by floor nurse · Ingresado por la enfermera</p>
+    <div class="input-row">
+      <input type="text" id="res-room" placeholder="Room / Cuarto" style="max-width:90px;" />
+      <input type="text" id="res-name" placeholder="Name / Nombre" />
+    </div>
+    <input type="text" id="res-diet" placeholder="Diet restrictions / Restricciones (e.g. no salt, low fat)" />
+    <button class="btn-green" onclick="addResident()">+ Add Resident / Agregar Residente</button>
+    <div class="item-list" id="resident-list"></div>
+  </div>
+</div>
+
+<!-- ===== ORDER TAKER PAGE ===== -->
+<div class="page" id="page-order">
+  <div class="card">
+    <div class="card-title">📋 Take Orders / Tomar Pedidos</div>
+    <div id="no-menu-msg" style="color:rgba(255,255,255,0.5);font-size:0.88rem;text-align:center;padding:20px;">
+      ⚠️ No menu transmitted yet.<br>Manager must transmit today's menu first.<br><br>
+      No hay menú transmitido aún.<br>El gerente debe transmitir el menú primero.
+    </div>
+    <div id="order-active" style="display:none">
+      <p style="color:rgba(255,255,255,0.6);font-size:0.82rem;margin-bottom:10px;">Type room number · Escriba número de cuarto</p>
+      <input class="room-input-big" type="number" id="room-input" placeholder="226" oninput="lookupRoom()" />
+      <div id="resident-info"></div>
+      <div id="order-menu-items"></div>
+      <button class="btn-green" id="save-order-btn" style="display:none" onclick="saveOrder()">✅ Save Order / Guardar Pedido</button>
+    </div>
+  </div>
+
+  <div class="card" id="saved-orders-card" style="display:none">
+    <div class="card-title">✅ Saved Orders / Pedidos Guardados</div>
+    <div id="saved-orders-list"></div>
+    <button class="btn-green" onclick="sendToKitchen()">📡 Send to Kitchen / Enviar a Cocina</button>
+  </div>
+</div>
+
+<!-- ===== KITCHEN PAGE ===== -->
+<div class="page" id="page-kitchen">
+  <div class="card">
+    <div class="card-title">🍳 Kitchen Orders / Pedidos de Cocina</div>
+    <div id="no-kitchen-msg" style="color:rgba(255,255,255,0.5);font-size:0.88rem;text-align:center;padding:20px;">
+      ⚠️ No orders received yet.<br>No se han recibido pedidos aún.
+    </div>
+    <div id="kitchen-content" style="display:none">
+      <div id="kitchen-orders"></div>
+      <hr style="border-color:rgba(255,255,255,0.2);margin:12px 0;"/>
+      <div class="card-title" style="color:#2ecc71">📊 Totals / Totales</div>
+      <div id="kitchen-totals"></div>
+      <button class="btn-green no-print" onclick="window.print()" style="margin-top:12px;">🖨️ Print Kitchen Sheet / Imprimir</button>
+      <button class="btn-gray no-print" onclick="clearKitchen()">🗑️ Clear / Limpiar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+var staples = JSON.parse(localStorage.getItem('nm_staples') || '[]');
+var residents = JSON.parse(localStorage.getItem('nm_residents') || '[]');
+var todayMenu = JSON.parse(localStorage.getItem('nm_menu') || 'null');
+var kitchenOrders = JSON.parse(localStorage.getItem('nm_kitchen') || '[]');
+var currentOrders = [];
+var currentRoom = null;
+var selectedItems = {};
+
+// ===== NAV =====
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (id === 'order') renderOrderPage();
+  if (id === 'kitchen') renderKitchen();
+  if (id === 'residents') renderResidents();
+  if (id === 'manager') renderStaples();
+}
+
+// ===== DATE =====
+var d = new Date();
+var DN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+document.getElementById('menu-date').value = DN[d.getDay()]+', '+MN[d.getMonth()]+' '+d.getDate();
+
+// ===== DICTIONARY =====
+var D={
+  'scrambled eggs':'huevos revueltos','fried eggs':'huevos fritos','bacon and eggs':'tocino y huevos',
+  'eggs':'huevos','bacon':'tocino','sausage':'salchicha','ham':'jamón',
+  'toast':'tostada','white toast':'tostada blanca','wheat toast':'tostada de trigo',
+  'butter':'mantequilla','jelly':'mermelada','pancakes':'panqueques',
+  'french toast':'tostada francesa','oatmeal':'avena','cereal':'cereal','grits':'sémola de maíz',
+  'yogurt':'yogur','muffin':'muffin','biscuits':'galletas','hash browns':'papas ralladas fritas',
+  'coffee':'café','six ounce coffee':'café de seis onzas','eight ounce coffee':'café de ocho onzas',
+  'decaf coffee':'café descafeinado','decaf':'descafeinado',
+  'tea':'té','hot tea':'té caliente','iced tea':'té helado',
+  'milk':'leche','skim milk':'leche descremada','whole milk':'leche entera',
+  'orange juice':'jugo de naranja','apple juice':'jugo de manzana',
+  'cranberry juice':'jugo de arándano','prune juice':'jugo de ciruela',
+  'water':'agua','ice water':'agua con hielo','hot chocolate':'chocolate caliente',
+  'cream':'crema','two creams':'dos cremas','one cream':'una crema',
+  'sugar':'azúcar','sweet and low':'edulcorante Sweet and Low',
+  'one sweet and low':'un Sweet and Low','splenda':'Splenda','honey':'miel',
+  'syrup':'jarabe','maple syrup':'jarabe de maple',
+  'ketchup':'kétchup','mustard':'mostaza','hot sauce':'salsa picante',
+  'soup':'sopa','chicken soup':'sopa de pollo','beef bouillon':'caldo de res',
+  'chicken bouillon':'caldo de pollo','vegetable soup':'sopa de verduras',
+  'tomato soup':'sopa de tomate','chicken noodle soup':'sopa de pollo con fideos',
+  'fish sandwich':'sándwich de pescado','chicken sandwich':'sándwich de pollo',
+  'grilled cheese':'queso a la plancha','tuna sandwich':'sándwich de atún',
+  'turkey sandwich':'sándwich de pavo','ham sandwich':'sándwich de jamón',
+  'burger':'hamburguesa','hamburger':'hamburguesa','hot dog':'perro caliente',
+  'salad':'ensalada','garden salad':'ensalada de jardín','caesar salad':'ensalada César',
+  'coleslaw':'ensalada de col','fruit salad':'ensalada de frutas',
+  'chicken':'pollo','roast chicken':'pollo asado','grilled chicken':'pollo a la plancha',
+  'fried chicken':'pollo frito','baked chicken':'pollo al horno',
+  'beef':'res','roast beef':'rosbif','meatloaf':'pastel de carne','meatballs':'albóndigas',
+  'pork chops':'chuletas de cerdo','pork chop':'chuleta de cerdo',
+  'fish':'pescado','baked fish':'pescado al horno','fried fish':'pescado frito',
+  'salmon':'salmón','tuna':'atún','shrimp':'camarones','tilapia':'tilapia',
+  'pasta':'pasta','spaghetti':'espagueti','macaroni and cheese':'macarrones con queso',
+  'mac and cheese':'macarrones con queso','lasagna':'lasaña','turkey':'pavo',
+  'mashed potatoes':'puré de papas','baked potato':'papa al horno',
+  'french fries':'papas fritas','sweet potato':'batata','potato chips':'papas fritas de bolsa',
+  'chips':'papas fritas de bolsa','rice':'arroz','white rice':'arroz blanco',
+  'green beans':'ejotes','broccoli':'brócoli','carrots':'zanahorias','corn':'maíz',
+  'peas':'guisantes','spinach':'espinaca','mixed vegetables':'verduras mixtas',
+  'dinner roll':'bolillo','dinner rolls':'bolillos','bread':'pan','cornbread':'pan de maíz',
+  'stuffing':'relleno','gravy':'salsa de carne','cranberry sauce':'salsa de arándano',
+  'apple pie':'pay de manzana','chocolate cake':'pastel de chocolate',
+  'cheesecake':'pastel de queso','ice cream':'helado','pudding':'pudín',
+  'chocolate pudding':'pudín de chocolate','vanilla pudding':'pudín de vainilla',
+  'rice pudding':'pudín de arroz','bread pudding':'pudín de pan','tapioca':'tapioca',
+  'jello':'gelatina','cookies':'galletas dulces','fruit cup':'copa de frutas',
+  'applesauce':'puré de manzana','sherbet':'sorbete',
+  'apple':'manzana','banana':'plátano','orange':'naranja','grapes':'uvas',
+  'strawberries':'fresas','watermelon':'sandía','pineapple':'piña',
+  'cottage cheese':'queso cottage','peanut butter':'mantequilla de maní',
+  'ensure':'Ensure','boost':'Boost',
+  'thickened water':'agua espesada','thickened juice':'jugo espesado',
+  'pot roast':'asado de olla','beef stew':'estofado de res',
+  'salisbury steak':'bistec Salisbury','chicken pot pie':'pay de pollo',
+  'stuffed peppers':'pimientos rellenos','collard greens':'berza',
+  'cabbage':'repollo','zucchini':'calabacín','garlic bread':'pan de ajo',
+  'no salt':'sin sal','low fat':'bajo en grasa','low sodium':'bajo en sodio',
+  'diabetic':'diabético','pureed':'puré','soft diet':'dieta blanda',
+  'mechanical soft':'dieta mecánica blanda','full liquid':'líquidos completos',
+  'clear liquid':'líquidos claros','renal diet':'dieta renal',
+  'heart healthy':'saludable para el corazón','vegetarian':'vegetariano'
+};
+
+function xlate(text) {
+  var t = text.trim().toLowerCase();
+  if (D[t]) return D[t];
+  var best='', bestLen=0;
+  for (var k in D) { if (t.indexOf(k)!==-1 && k.length>bestLen) { best=D[k]; bestLen=k.length; } }
+  return best || text.trim();
+}
+
+// ===== STAPLES =====
+function addStaple() {
+  var en = document.getElementById('staple-en').value.trim();
+  var es = document.getElementById('staple-es').value.trim() || xlate(en);
+  if (!en) return;
+  staples.push({en:en, es:es});
+  saveData();
+  document.getElementById('staple-en').value='';
+  document.getElementById('staple-es').value='';
+  renderStaples();
+}
+function deleteStaple(i) {
+  staples.splice(i,1); saveData(); renderStaples();
+}
+function renderStaples() {
+  var html='';
+  if (!staples.length) { html='<div class="live-empty">No staples yet. Add some above.</div>'; }
+  for (var i=0;i<staples.length;i++) {
+    html+='<div class="item-row"><div><div class="iname">⭐ '+staples[i].en+'</div><div class="ies">'+staples[i].es+'</div></div><button class="btn-small btn-del" onclick="deleteStaple('+i+')">✕</button></div>';
+  }
+  document.getElementById('staple-list').innerHTML=html;
+}
+renderStaples();
+
+// ===== RESIDENTS =====
+function addResident() {
+  var room=document.getElementById('res-room').value.trim();
+  var name=document.getElementById('res-name').value.trim();
+  var diet=document.getElementById('res-diet').value.trim();
+  if (!room||!name) { alert('Room number and name required.'); return; }
+  // Remove existing same room
+  residents = residents.filter(function(r){ return r.room !== room; });
+  residents.push({room:room, name:name, diet:diet});
+  saveData();
+  document.getElementById('res-room').value='';
+  document.getElementById('res-name').value='';
+  document.getElementById('res-diet').value='';
+  renderResidents();
+}
+function deleteResident(i) { residents.splice(i,1); saveData(); renderResidents(); }
+function renderResidents() {
+  var list = document.getElementById('resident-list');
+  if (!list) return;
+  var html='';
+  if (!residents.length) { html='<div class="live-empty">No residents added yet.</div>'; }
+  var sorted = residents.slice().sort(function(a,b){ return a.room.localeCompare(b.room,undefined,{numeric:true}); });
+  for (var i=0;i<sorted.length;i++) {
+    var r=sorted[i];
+    html+='<div class="item-row"><div><div class="iname">🚪 '+r.room+' — '+r.name+'</div><div class="ies">'+( r.diet||'No restrictions / Sin restricciones')+'</div></div><button class="btn-small btn-del" onclick="deleteResidentByRoom(\''+r.room+'\')">✕</button></div>';
+  }
+  list.innerHTML=html;
+}
+function deleteResidentByRoom(room) { residents=residents.filter(function(r){return r.room!==room;}); saveData(); renderResidents(); }
+renderResidents();
+
+// ===== MIC =====
+var micItems={b:[],l:[],d:[]};
+var micOn={b:false,l:false,d:false};
+var micRec={b:null,l:null,d:null};
+var mealN={b:'Breakfast',l:'Lunch',d:'Dinner'};
+
+function renderLive(id) {
+  var box=document.getElementById('live-'+id);
+  if (!micItems[id].length) { box.innerHTML='<div class="live-empty">Items appear here as you speak...</div>'; document.getElementById('count-'+id).textContent=''; return; }
+  var html='';
+  for (var i=0;i<micItems[id].length;i++) html+='<div class="live-item">✅ '+micItems[id][i]+'</div>';
+  box.innerHTML=html;
+  document.getElementById('count-'+id).textContent=micItems[id].length+' item'+(micItems[id].length!==1?'s':'')+' captured';
+}
+
+function toggleMic(id) {
+  if (micOn[id]) {
+    micOn[id]=false;
+    if (micRec[id]) { try{micRec[id].stop();}catch(e){} micRec[id]=null; }
+    document.getElementById('mic-'+id).textContent='🎤 Speak '+mealN[id]+' Items';
+    document.getElementById('mic-'+id).classList.remove('on');
+    var box=document.getElementById('live-'+id);
+    var old=box.querySelector('.live-interim'); if(old)old.remove();
+  } else {
+    micOn[id]=true;
+    document.getElementById('mic-'+id).textContent='🔴 Recording '+mealN[id]+'... Tap to Stop';
+    document.getElementById('mic-'+id).classList.add('on');
+    renderLive(id);
+    runMic(id);
+  }
+}
+
+function runMic(id) {
+  if (!micOn[id]) return;
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if (!SR) { alert('Voice not supported. Please use Chrome.'); return; }
+  var r=new SR(); r.lang='en-US'; r.continuous=false; r.interimResults=true;
+  micRec[id]=r;
+  var sf='';
+  r.onresult=function(e) {
+    sf=''; var interim='';
+    for (var i=0;i<e.results.length;i++) {
+      if (e.results[i].isFinal) sf+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    var box=document.getElementById('live-'+id);
+    var old=box.querySelector('.live-interim'); if(old)old.remove();
+    if (interim) { var el=document.createElement('div'); el.className='live-interim'; el.textContent='🎤 '+interim+'...'; box.appendChild(el); }
+  };
+  r.onend=function() {
+    micRec[id]=null;
+    if (sf.trim()) {
+      var parts=sf.replace(/\bcomma\b/gi,',').split(',');
+      for (var i=0;i<parts.length;i++) { var it=parts[i].trim().replace(/[.!?]+$/,''); if(it.length>1) micItems[id].push(it); }
+      renderLive(id);
+    }
+    var box=document.getElementById('live-'+id); var old=box.querySelector('.live-interim'); if(old)old.remove();
+    if (micOn[id]) setTimeout(function(){runMic(id);},150);
+  };
+  r.onerror=function(e) { micRec[id]=null; if(e.error==='aborted')return; if(micOn[id])setTimeout(function(){runMic(id);},300); };
+  try{r.start();}catch(e){}
+}
+
+// ===== BUILD MENU =====
+function buildAndPreview() {
+  var hasSpecials = micItems.b.length||micItems.l.length||micItems.d.length;
+  if (!hasSpecials && !staples.length) { document.getElementById('mgr-status').textContent='⚠️ Please add staples or speak some menu items first.'; return; }
+
+  var menuDate = document.getElementById('menu-date').value;
+  var menu = {
+    date: menuDate,
+    staples: staples.slice(),
+    breakfast: micItems.b.slice(),
+    lunch: micItems.l.slice(),
+    dinner: micItems.d.slice()
+  };
+
+  // Build preview HTML
+  var html = '<div class="mp-title">🍽️ Daily Menu · Menú del Día</div>';
+  html += '<div class="mp-date">'+menuDate+'</div>';
+
+  // Staples section
+  if (staples.length) {
+    html += '<div class="mp-section"><div class="mp-section-title">⭐ Daily Staples / Artículos Fijos</div>';
+    for (var i=0;i<staples.length;i++) {
+      html+='<div class="mp-item"><div class="mp-en">'+staples[i].en+'</div><div class="mp-es">'+staples[i].es+'</div></div>';
+    }
+    html+='</div>';
+  }
+
+  var meals=[{key:'breakfast',en:'Breakfast',es:'Desayuno',icon:'🌅'},{key:'lunch',en:'Lunch',es:'Almuerzo',icon:'☀️'},{key:'dinner',en:'Dinner',es:'Cena',icon:'🌙'}];
+  for (var m=0;m<meals.length;m++) {
+    var items=menu[meals[m].key];
+    if (!items.length) continue;
+    html+='<div class="mp-section"><div class="mp-section-title">'+meals[m].icon+' '+meals[m].en+' / '+meals[m].es+'</div>';
+    for (var i=0;i<items.length;i++) {
+      html+='<div class="mp-item"><div class="mp-en">'+items[i]+'</div><div class="mp-es">'+xlate(items[i])+'</div></div>';
+    }
+    html+='</div>';
+  }
+
+  document.getElementById('menu-preview-inner').innerHTML=html;
+  document.getElementById('menu-preview-box').style.display='block';
+  document.getElementById('mgr-status').textContent='✅ Menu ready! Transmit to order takers or print.';
+
+  // Save current menu object for transmit
+  window._pendingMenu = menu;
+}
+
+function transmitMenu() {
+  if (!window._pendingMenu) return;
+  todayMenu = window._pendingMenu;
+  localStorage.setItem('nm_menu', JSON.stringify(todayMenu));
+  document.getElementById('mgr-status').textContent='📡 Menu transmitted! Order takers can now take orders.';
+}
+
+function clearManager() {
+  micItems={b:[],l:[],d:[]};
+  ['b','l','d'].forEach(function(id){
+    micOn[id]=false;
+    if(micRec[id]){try{micRec[id].stop();}catch(e){}micRec[id]=null;}
+    document.getElementById('mic-'+id).textContent='🎤 Speak '+mealN[id]+' Items';
+    document.getElementById('mic-'+id).classList.remove('on');
+    renderLive(id);
+  });
+  document.getElementById('menu-preview-box').style.display='none';
+  document.getElementById('mgr-status').textContent='';
+}
+
+// ===== ORDER PAGE =====
+function renderOrderPage() {
+  todayMenu = JSON.parse(localStorage.getItem('nm_menu')||'null');
+  if (!todayMenu) {
+    document.getElementById('no-menu-msg').style.display='block';
+    document.getElementById('order-active').style.display='none';
+  } else {
+    document.getElementById('no-menu-msg').style.display='none';
+    document.getElementById('order-active').style.display='block';
+  }
+  renderSavedOrders();
+}
+
+function lookupRoom() {
+  var room = document.getElementById('room-input').value.trim();
+  selectedItems = {};
+  document.getElementById('save-order-btn').style.display='none';
+  if (!room) { document.getElementById('resident-info').innerHTML=''; document.getElementById('order-menu-items').innerHTML=''; return; }
+
+  var res = residents.find(function(r){ return r.room===room; });
+  var infoHtml='';
+  if (res) {
+    infoHtml='<div class="resident-card"><div class="resident-name">🚪 Room '+res.room+' — '+res.name+'</div>';
+    if (res.diet) infoHtml+='<div class="resident-diet">⚠️ Diet: '+res.diet+' · Dieta: '+xlate(res.diet)+'</div>';
+    infoHtml+='</div>';
+    currentRoom=res;
+  } else {
+    infoHtml='<div class="resident-card"><div class="resident-name">🚪 Room '+room+'</div><div class="resident-diet">Resident not in system / Residente no registrado</div></div>';
+    currentRoom={room:room,name:'Room '+room,diet:''};
+  }
+  document.getElementById('resident-info').innerHTML=infoHtml;
+
+  // Build menu item buttons
+  var html='<p style="color:rgba(255,255,255,0.6);font-size:0.82rem;margin-bottom:8px;">Tap to select items · Toque para seleccionar</p>';
+
+  // Staples
+  if (todayMenu.staples && todayMenu.staples.length) {
+    html+='<div style="color:#f39c12;font-size:0.82rem;font-weight:700;margin-bottom:4px;">⭐ Staples / Artículos Fijos</div>';
+    for (var i=0;i<todayMenu.staples.length;i++) {
+      var s=todayMenu.staples[i];
+      var key='staple_'+i;
+      html+='<button class="menu-item-btn staple" id="itm-'+key+'" onclick="toggleItem(\''+key+'\',\''+s.en+'\')">'+s.en+' · '+s.es+'</button>';
+    }
+  }
+
+  var meals=[{key:'breakfast',en:'Breakfast',es:'Desayuno',icon:'🌅'},{key:'lunch',en:'Lunch',es:'Almuerzo',icon:'☀️'},{key:'dinner',en:'Dinner',es:'Cena',icon:'🌙'}];
+  for (var m=0;m<meals.length;m++) {
+    var items=todayMenu[meals[m].key];
+    if (!items||!items.length) continue;
+    html+='<div style="color:#f39c12;font-size:0.82rem;font-weight:700;margin:10px 0 4px;">'+meals[m].icon+' '+meals[m].en+' / '+meals[m].es+'</div>';
+    for (var i=0;i<items.length;i++) {
+      var key=meals[m].key+'_'+i;
+      html+='<button class="menu-item-btn" id="itm-'+key+'" onclick="toggleItem(\''+key+'\',\''+items[i]+'\')">'+items[i]+' · '+xlate(items[i])+'</button>';
+    }
+  }
+
+  document.getElementById('order-menu-items').innerHTML=html;
+  document.getElementById('save-order-btn').style.display='block';
+}
+
+function toggleItem(key, name) {
+  var btn=document.getElementById('itm-'+key);
+  if (selectedItems[key]) {
+    delete selectedItems[key];
+    btn.classList.remove('selected');
+  } else {
+    selectedItems[key]=name;
+    btn.classList.add('selected');
+  }
+}
+
+function saveOrder() {
+  if (!currentRoom) return;
+  var chosen=Object.values(selectedItems);
+  if (!chosen.length) { alert('Please select at least one item.'); return; }
+  currentOrders.push({ room:currentRoom.room, name:currentRoom.name, diet:currentRoom.diet||'', items:chosen });
+  renderSavedOrders();
+  // Clear
+  document.getElementById('room-input').value='';
+  document.getElementById('resident-info').innerHTML='';
+  document.getElementById('order-menu-items').innerHTML='';
+  document.getElementById('save-order-btn').style.display='none';
+  selectedItems={};
+  currentRoom=null;
+}
+
+function renderSavedOrders() {
+  var card=document.getElementById('saved-orders-card');
+  var list=document.getElementById('saved-orders-list');
+  if (!currentOrders.length) { card.style.display='none'; return; }
+  card.style.display='block';
+  var html='';
+  for (var i=0;i<currentOrders.length;i++) {
+    var o=currentOrders[i];
+    html+='<div class="order-card"><div class="order-room">🚪 Room '+o.room+' — '+o.name+'</div>';
+    for (var j=0;j<o.items.length;j++) {
+      html+='<div class="order-item">• '+o.items[j]+' · '+xlate(o.items[j])+'</div>';
+    }
+    html+='</div>';
+  }
+  list.innerHTML=html;
+}
+
+function sendToKitchen() {
+  if (!currentOrders.length) return;
+  kitchenOrders = currentOrders.slice();
+  localStorage.setItem('nm_kitchen', JSON.stringify(kitchenOrders));
+  currentOrders=[];
+  renderSavedOrders();
+  alert('Orders sent to kitchen! ✅\n¡Pedidos enviados a cocina!');
+  // Switch to kitchen tab
+  document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.remove('active'); if(i===3)b.classList.add('active'); });
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('page-kitchen').classList.add('active');
+  renderKitchen();
+}
+
+// ===== KITCHEN =====
+function renderKitchen() {
+  kitchenOrders = JSON.parse(localStorage.getItem('nm_kitchen')||'[]');
+  if (!kitchenOrders.length) {
+    document.getElementById('no-kitchen-msg').style.display='block';
+    document.getElementById('kitchen-content').style.display='none';
+    return;
+  }
+  document.getElementById('no-kitchen-msg').style.display='none';
+  document.getElementById('kitchen-content').style.display='block';
+
+  // Orders
+  var html='';
+  for (var i=0;i<kitchenOrders.length;i++) {
+    var o=kitchenOrders[i];
+    html+='<div class="order-card"><div class="order-room">🚪 Room '+o.room+' — '+o.name;
+    if(o.diet) html+=' <span style="color:#e74c3c;font-size:0.75rem;">⚠️ '+o.diet+'</span>';
+    html+='</div>';
+    for (var j=0;j<o.items.length;j++) {
+      html+='<div class="order-item">• '+o.items[j]+' · '+xlate(o.items[j])+'</div>';
+    }
+    html+='</div>';
+  }
+  document.getElementById('kitchen-orders').innerHTML=html;
+
+  // Totals
+  var totals={};
+  for (var i=0;i<kitchenOrders.length;i++) {
+    for (var j=0;j<kitchenOrders[i].items.length;j++) {
+      var item=kitchenOrders[i].items[j];
+      totals[item]=(totals[item]||0)+1;
+    }
+  }
+  var thtml='';
+  var keys=Object.keys(totals).sort();
+  for (var k=0;k<keys.length;k++) {
+    thtml+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dotted rgba(255,255,255,0.1);">';
+    thtml+='<span style="font-size:0.9rem;">'+keys[k]+' · '+xlate(keys[k])+'</span>';
+    thtml+='<span style="color:#2ecc71;font-weight:900;font-size:1rem;">×'+totals[keys[k]]+'</span></div>';
+  }
+  document.getElementById('kitchen-totals').innerHTML=thtml;
+}
+
+function clearKitchen() {
+  if (!confirm('Clear kitchen orders? / ¿Limpiar pedidos?')) return;
+  kitchenOrders=[];
+  localStorage.setItem('nm_kitchen','[]');
+  renderKitchen();
+}
+
+// ===== SAVE DATA =====
+function saveData() {
+  localStorage.setItem('nm_staples', JSON.stringify(staples));
+  localStorage.setItem('nm_residents', JSON.stringify(residents));
+}
+</script>
+</body>
+</html>
