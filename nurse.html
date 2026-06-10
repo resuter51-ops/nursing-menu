@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>Nurse — Resident Manager</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f0f4f0; min-height: 100vh; }
+  .header { background: #2d5a2d; color: white; padding: 16px 20px; text-align: center; }
+  .header h1 { font-size: 1.4rem; }
+  .header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .login-wrap { max-width: 360px; margin: 60px auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  .login-wrap h2 { color: #2d5a2d; margin-bottom: 20px; text-align: center; }
+  input, textarea, select { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; margin-bottom: 12px; }
+  textarea { resize: vertical; min-height: 70px; }
+  .btn { width: 100%; padding: 12px; background: #2d5a2d; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+  .btn:hover { background: #1e3d1e; }
+  .btn-red { background: #c0392b; }
+  .btn-red:hover { background: #922b21; }
+  .btn-sm { width: auto; padding: 6px 14px; font-size: 0.85rem; border-radius: 6px; margin: 2px; }
+  .main { max-width: 700px; margin: 20px auto; padding: 0 12px 40px; }
+  .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+  .card h2 { color: #2d5a2d; font-size: 1.1rem; margin-bottom: 14px; }
+  .resident-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #eee; }
+  .resident-row:last-child { border-bottom: none; }
+  .res-info { flex: 1; }
+  .res-room { font-weight: 700; font-size: 1.05rem; color: #2d5a2d; }
+  .res-name { font-size: 1rem; color: #111; }
+  .res-diet { font-size: 0.88rem; color: #888; font-style: italic; margin-top: 2px; }
+  .res-actions { display: flex; flex-direction: column; gap: 4px; margin-left: 10px; }
+  .status { text-align: center; padding: 10px; color: #2d5a2d; font-weight: 600; min-height: 30px; }
+  .search-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .search-row input { margin-bottom: 0; }
+  #resCount { color: #888; font-size: 0.85rem; margin-bottom: 8px; }
+  .nav-links { text-align: center; margin-top: 16px; }
+  .nav-links a { color: #2d5a2d; text-decoration: none; font-weight: 600; margin: 0 10px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🏥 Resident Manager</h1>
+  <p>Add, edit, and review resident information</p>
+</div>
+
+<div id="loginSection" class="login-wrap">
+  <h2>🔒 Staff Login</h2>
+  <input type="password" id="pwInput" placeholder="Enter password" />
+  <button class="btn" onclick="doLogin()">Login</button>
+  <div class="status" id="loginStatus"></div>
+</div>
+
+<div id="mainSection" style="display:none">
+  <div class="main">
+    <div class="card">
+      <h2>➕ Add / Update Resident</h2>
+      <input type="text" id="roomIn" placeholder="Room Number (e.g. 101)" />
+      <input type="text" id="nameIn" placeholder="Resident Full Name" />
+      <textarea id="dietIn" placeholder="Dietary Restrictions (e.g. diabetic, no salt, pureed foods)"></textarea>
+      <button class="btn" onclick="saveResident()">Save Resident</button>
+      <div class="status" id="saveStatus"></div>
+    </div>
+
+    <div class="card">
+      <h2>👥 All Residents</h2>
+      <div class="search-row">
+        <input type="text" id="searchIn" placeholder="Search by room or name..." oninput="renderList()" />
+      </div>
+      <div id="resCount"></div>
+      <div id="resList"></div>
+    </div>
+
+    <div class="nav-links">
+      <a href="kitchen.html">🍳 Kitchen</a>
+      <a href="order.html">📋 Order Taker</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB = 'https://john-the-builder-default-rtdb.firebaseio.com';
+const PASS = 'manager2024';
+var allResidents = {};
+
+function doLogin() {
+  var pw = document.getElementById('pwInput').value.trim();
+  if (pw === PASS) {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('mainSection').style.display = 'block';
+    loadResidents();
+  } else {
+    document.getElementById('loginStatus').textContent = '❌ Incorrect password';
+  }
+}
+
+document.getElementById('pwInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+function loadResidents() {
+  fetch(DB + '/residents.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      allResidents = data || {};
+      renderList();
+    });
+}
+
+function saveResident() {
+  var room = document.getElementById('roomIn').value.trim().toUpperCase();
+  var name = document.getElementById('nameIn').value.trim();
+  var diet = document.getElementById('dietIn').value.trim();
+  if (!room || !name) {
+    document.getElementById('saveStatus').textContent = '⚠️ Room number and name are required.';
+    return;
+  }
+  var resident = { room: room, name: name, diet: diet || 'None' };
+  fetch(DB + '/residents/' + room + '.json', {
+    method: 'PUT',
+    body: JSON.stringify(resident)
+  }).then(function() {
+    allResidents[room] = resident;
+    renderList();
+    document.getElementById('roomIn').value = '';
+    document.getElementById('nameIn').value = '';
+    document.getElementById('dietIn').value = '';
+    document.getElementById('saveStatus').textContent = '✅ Resident saved!';
+    setTimeout(function(){ document.getElementById('saveStatus').textContent = ''; }, 2000);
+  });
+}
+
+function deleteResident(room) {
+  if (!confirm('Delete resident in room ' + room + '?')) return;
+  fetch(DB + '/residents/' + room + '.json', { method: 'DELETE' })
+    .then(function() {
+      delete allResidents[room];
+      renderList();
+    });
+}
+
+function editResident(room) {
+  var r = allResidents[room];
+  document.getElementById('roomIn').value = r.room;
+  document.getElementById('nameIn').value = r.name;
+  document.getElementById('dietIn').value = r.diet === 'None' ? '' : r.diet;
+  window.scrollTo(0, 0);
+}
+
+function renderList() {
+  var search = document.getElementById('searchIn').value.trim().toLowerCase();
+  var rooms = Object.keys(allResidents).sort();
+  var filtered = rooms.filter(function(r) {
+    var res = allResidents[r];
+    return !search || r.toLowerCase().includes(search) || res.name.toLowerCase().includes(search);
+  });
+  document.getElementById('resCount').textContent = filtered.length + ' resident(s)';
+  var html = '';
+  filtered.forEach(function(room) {
+    var res = allResidents[room];
+    html += '<div class="resident-row">' +
+      '<div class="res-info">' +
+        '<div class="res-room">Room ' + res.room + '</div>' +
+        '<div class="res-name">' + res.name + '</div>' +
+        '<div class="res-diet">🥗 ' + res.diet + '</div>' +
+      '</div>' +
+      '<div class="res-actions">' +
+        '<button class="btn btn-sm" onclick="editResident(\'' + room + '\')">✏️ Edit</button>' +
+        '<button class="btn btn-sm btn-red" onclick="deleteResident(\'' + room + '\')">🗑️ Delete</button>' +
+      '</div>' +
+    '</div>';
+  });
+  document.getElementById('resList').innerHTML = html || '<p style="color:#888;text-align:center;padding:20px">No residents yet.</p>';
+}
+</script>
+</body>
+</html>
