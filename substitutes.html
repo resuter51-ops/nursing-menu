@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>Substitute Choices</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f0f4f0; min-height: 100vh; }
+  .header { background: #1a5276; color: white; padding: 16px 20px; text-align: center; }
+  .header h1 { font-size: 1.4rem; }
+  .header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .main { max-width: 500px; margin: 20px auto; padding: 0 12px 40px; }
+  .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+  .card h2 { color: #1a5276; font-size: 1.1rem; margin-bottom: 14px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+  .sub-item { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
+  .sub-item:last-child { border-bottom: none; }
+  .sub-item::before { content: '🍽️'; font-size: 1.1rem; }
+  .note { background: #eaf4ea; border-radius: 8px; padding: 12px 14px; font-size: 0.92rem; color: #2d5a2d; margin-top: 8px; }
+  .nav-links { text-align: center; margin-top: 16px; }
+  .nav-links a { color: #1a5276; text-decoration: none; font-weight: 600; margin: 0 10px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🍽️ Substitute Choices</h1>
+  <p>Available alternatives for any meal</p>
+</div>
+
+<div class="main">
+  <div class="card">
+    <h2>🥪 Sandwiches</h2>
+    <div class="sub-item">Hamburger</div>
+    <div class="sub-item">Cheeseburger</div>
+    <div class="sub-item">Tuna Fish Sandwich</div>
+    <div class="sub-item">Turkey Sandwich</div>
+    <div class="sub-item">Cheese Sandwich</div>
+    <div class="sub-item">Grilled Cheese Sandwich</div>
+  </div>
+
+  <div class="note">
+    💡 If a resident wants a substitute, tap the 🎤 Custom Choice button on the order page and speak their selection.
+  </div>
+
+  <div class="nav-links">
+    <a href="order.html">📋 Back to Orders</a>
+    <a href="kitchen.html">🍳 Kitchen</a>
+    <a href="nurse.html">🏥 Nurse</a>
+  </div>
+</div>
+</body>
+</html>
